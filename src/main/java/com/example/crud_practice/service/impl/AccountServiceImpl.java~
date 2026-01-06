@@ -1,0 +1,59 @@
+package com.example.crud_practice.service.impl;
+
+import com.example.crud_practice.dto.request.LoginRequest;
+import com.example.crud_practice.dto.request.RegisterRequest;
+import com.example.crud_practice.entity.Account;
+import com.example.crud_practice.exception.ConflictException;
+import com.example.crud_practice.exception.ResourceNotFoundException;
+import com.example.crud_practice.exception.UnauthorizedException;
+import com.example.crud_practice.repository.AccountRepository;
+import com.example.crud_practice.service.AccountService;
+import com.example.crud_practice.config.JwtUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+@Service
+public class AccountServiceImpl implements AccountService {
+    private static final String USERNAME_EXISTS = "Username exists";
+
+    private final AccountRepository accountRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    @Autowired
+    public AccountServiceImpl(AccountRepository accountRepository, PasswordEncoder passwordEncoder) {
+        this.accountRepository = accountRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    @Override
+    public void register(RegisterRequest registerRequest) {
+        if (accountRepository.findAll().stream().anyMatch(account -> account.getUsername().equals(registerRequest.getUsername()))) {
+            throw new ConflictException(USERNAME_EXISTS);
+        }
+        Account account = new Account();
+        account.setUsername(registerRequest.getUsername());
+        account.setPassword(
+                passwordEncoder.encode(registerRequest.getPassword())
+        );
+        accountRepository.save(account);
+    }
+
+    @Override
+    public String login(LoginRequest loginRequest) {
+        Account account = accountRepository.findByUsername(loginRequest.getUsername());
+        if (account == null) {
+            throw new ResourceNotFoundException("Wrong username or password");
+        }
+        if (!passwordEncoder.matches(loginRequest.getPassword(), account.getPassword())) {
+            throw new UnauthorizedException("Wrong username or password");
+        }
+
+        return JwtUtil.generateToken(account);
+    }
+
+    @Override
+    public Account findByUsername(String username) {
+        return accountRepository.findByUsername(username);
+    }
+}

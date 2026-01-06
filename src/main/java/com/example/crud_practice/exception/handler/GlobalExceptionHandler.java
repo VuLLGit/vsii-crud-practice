@@ -1,5 +1,9 @@
-package com.example.crud_practice.exception;
+package com.example.crud_practice.exception.handler;
 
+import com.example.crud_practice.exception.BadRequestException;
+import com.example.crud_practice.exception.ConflictException;
+import com.example.crud_practice.exception.ResourceNotFoundException;
+import com.example.crud_practice.exception.UnauthorizedException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -62,6 +66,30 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<Map<String, Object>> handleBadRequest(BadRequestException ex) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
+        return new ResponseEntity<>(buildBody(status, ex.getMessage()), status);
+    }
+
+    /**
+     * Xử lý lỗi unauthorized (401).
+     *
+     * @param ex UnauthorizedException
+     * @return response lỗi với HTTP 401
+     */
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<Map<String, Object>> handleUnauthorized(UnauthorizedException ex) {
+        HttpStatus status = HttpStatus.UNAUTHORIZED;
+        return new ResponseEntity<>(buildBody(status, ex.getMessage()), status);
+    }
+
+    /**
+     * Xử lý lỗi request không hợp lệ do nghiệp vụ (409).
+     *
+     * @param ex ConflictException
+     * @return response lỗi với HTTP 409
+     */
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<Map<String, Object>> handleBusiness(ConflictException ex) {
+        HttpStatus status = HttpStatus.CONFLICT;
         return new ResponseEntity<>(buildBody(status, ex.getMessage()), status);
     }
 

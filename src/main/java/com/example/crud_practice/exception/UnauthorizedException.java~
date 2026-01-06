@@ -1,0 +1,7 @@
+package com.example.crud_practice.exception;
+
+public class UnauthorizedExceotuin extends RuntimeException {
+    public UnauthorizedExceotuin(String message) {
+        super(message);
+    }
+}
