@@ -1,6 +1,6 @@
 package com.example.crud_practice.config;
 
-import com.example.crud_practice.entity.enums.Permission;
+import com.example.crud_practice.entity.enums.PermissionEnum;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -44,18 +44,19 @@ public class SecurityConfig {
 
         http
                 .csrf(csrf -> csrf.disable()) // Tắt CSRF cho API
-                .authorizeHttpRequests(auth -> auth
-                        // mở cho auth
-                        .requestMatchers("/api/auth/**").permitAll()
-                        // ví dụ: chỉ cần permission đọc cho GET /api/clothes/**
-                        .requestMatchers(HttpMethod.GET, "/api/clothes/**").hasAuthority(Permission.CLOTHES_READ.name())
-                        // ví dụ: cần permission ghi cho POST/PUT/DELETE /api/clothes/**
-                        .requestMatchers(HttpMethod.POST, "/api/clothes/**").hasAuthority(Permission.CLOTHES_WRITE.name())
-                        .requestMatchers(HttpMethod.PUT, "/api/clothes/**").hasAuthority(Permission.CLOTHES_WRITE.name())
-                        .requestMatchers(HttpMethod.DELETE, "/api/clothes/**").hasAuthority(Permission.CLOTHES_WRITE.name())
-                        // các request còn lại yêu cầu đăng nhập hoặc cho phép tùy cấu hình
-                        .anyRequest().permitAll()
-                )
+                .authorizeHttpRequests(auth -> {
+                    // mở cho auth
+                    auth.requestMatchers("/api/auth/**").permitAll();
+
+                    // tự động map permission -> API
+                    for (PermissionEnum permission : PermissionEnum.values()) {
+                        HttpMethod method = HttpMethod.valueOf(permission.getMethod());
+                        auth.requestMatchers(method, permission.getUrl()).hasAuthority(permission.name());
+                    }
+
+                    // các request còn lại yêu cầu đăng nhập hoặc cho phép tùy cấu hình
+                    auth.anyRequest().permitAll();
+                })
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

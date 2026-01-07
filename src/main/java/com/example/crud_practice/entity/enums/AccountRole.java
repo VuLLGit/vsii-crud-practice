@@ -1,5 +1,6 @@
 package com.example.crud_practice.entity.enums;
 
+import java.util.EnumSet;
 import java.util.Set;
 
 /**
@@ -8,11 +9,11 @@ import java.util.Set;
  * Mỗi role đi kèm với một tập các permission tương ứng.
  */
 public enum AccountRole {
-    ADMIN("Admin", Set.of(Permission.CLOTHES_READ, Permission.CLOTHES_WRITE)),
-    USER("User", Set.of(Permission.CLOTHES_READ));
+    ADMIN("Admin", EnumSet.allOf(PermissionEnum.class)),
+    USER("User", EnumSet.of(PermissionEnum.CLOTHES_READ));
 
     private final String value;
-    private final Set<Permission> permissions;
+    private final Set<PermissionEnum> permissions;
 
     /**
      * Khởi tạo một giá trị role với tên hiển thị và danh sách permission.
@@ -20,7 +21,7 @@ public enum AccountRole {
      * @param value       tên hiển thị của role
      * @param permissions tập các quyền (permission) gắn với role
      */
-    AccountRole(String value, Set<Permission> permissions) {
+    AccountRole(String value, Set<PermissionEnum> permissions) {
         this.value = value;
         this.permissions = permissions;
     }
@@ -39,7 +40,7 @@ public enum AccountRole {
      *
      * @return tập các permission
      */
-    public Set<Permission> getPermissions() {
+    public Set<PermissionEnum> getPermissions() {
         return permissions;
     }
 }
